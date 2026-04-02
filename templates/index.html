@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bioinformatics Toolkit - Advanced</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>🧬 BioKit</h1>
+                <p>Advanced Version</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-page="dashboard">
+                    <span class="icon">🏠</span>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-page="dna-analyzer">
+                    <span class="icon">🧪</span>
+                    <span>DNA Analyzer</span>
+                </li>
+                <li class="nav-item" data-page="sequence-alignment">
+                    <span class="icon">📊</span>
+                    <span>Sequence Alignment</span>
+                </li>
+                <li class="nav-item" data-page="blast-search">
+                    <span class="icon">🔍</span>
+                    <span>Mini BLAST</span>
+                </li>
+                <li class="nav-item" data-page="genome-viewer">
+                    <span class="icon">🗺️</span>
+                    <span>Genome Viewer</span>
+                </li>
+                <li class="nav-divider"></li>
+                <li class="nav-item" data-page="history" id="nav-history">
+                    <span class="icon">📜</span>
+                    <span>View History</span>
+                    <span class="badge" id="history-badge" style="display:none;">0</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <p>Student Version</p>
+                <p>v2.0</p>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Dashboard Page -->
+            <section id="dashboard" class="page active">
+                <div class="page-header">
+                    <h2>Welcome to Bioinformatics Toolkit</h2>
+                    <p>A professional tool for DNA analysis, sequence alignment, and genomic research</p>
+                </div>
+                
+                <!-- Feature Cards -->
+                <div class="feature-cards">
+                    <div class="feature-card" data-goto="dna-analyzer">
+                        <div class="card-icon">🧪</div>
+                        <h3>DNA Analyzer</h3>
+                        <p>Analyze DNA sequences: GC content, molecular weight, complement, transcription, translation</p>
+                        <div class="card-tags">
+                            <span class="tag">GC Content</span>
+                            <span class="tag">Translation</span>
+                        </div>
+                    </div>
+                    <div class="feature-card" data-goto="sequence-alignment">
+                        <div class="card-icon">📊</div>
+                        <h3>Sequence Alignment</h3>
+                        <p>Compare two DNA sequences and calculate similarity scores</p>
+                        <div class="card-tags">
+                            <span class="tag">Identity</span>
+                            <span class="tag">Matching</span>
+                        </div>
+                    </div>
+                    <div class="feature-card" data-goto="blast-search">
+                        <div class="card-icon">🔍</div>
+                        <h3>Mini BLAST</h3>
+                        <p>Search against a database of known gene sequences</p>
+                        <div class="card-tags">
+                            <span class="tag">Database</span>
+                            <span class="tag">E-value</span>
+                        </div>
+                    </div>
+                    <div class="feature-card" data-goto="genome-viewer">
+                        <div class="card-icon">🗺️</div>
+                        <h3>Genome Viewer</h3>
+                        <p>Visualize chromosomes and gene locations</p>
+                        <div class="card-tags">
+                            <span class="tag">Visualization</span>
+                            <span class="tag">Genes</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real Gene Examples Section -->
+                <div class="section-container">
+                    <h3 class="section-title">
+                        <span class="icon">🧬</span>
+                        Example Gene Sequences
+                        <span class="subtitle">Real biological genes for practice</span>
+                    </h3>
+                    <div class="gene-cards" id="gene-cards">
+                        <!-- Gene cards will be loaded dynamically -->
+                        <div class="loading">Loading gene database...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DNA Analyzer Page -->
+            <section id="dna-analyzer" class="page">
+                <div class="page-header">
+                    <h2>DNA Analyzer</h2>
+                    <p>Enter a DNA sequence to analyze its properties and generate reports</p>
+                </div>
+                <div class="tool-container">
+                    <div class="input-section">
+                        <label for="dna-sequence">Enter DNA Sequence:</label>
+                        <textarea id="dna-sequence" placeholder="ATCGATCGATCG..." rows="4"></textarea>
+                        <div class="action-buttons">
+                            <button id="analyze-btn" class="btn-primary">
+                                <span class="btn-icon">🔬</span>
+                                Analyze Sequence
+                            </button>
+                            <button id="download-pdf-btn" class="btn-secondary" disabled>
+                                <span class="btn-icon">📄</span>
+                                Download PDF
+                            </button>
+                            <button id="save-result-btn" class="btn-secondary" disabled>
+                                <span class="btn-icon">💾</span>
+                                Save Result
+                            </button>
+                        </div>
+                    </div>
+                    <div id="dna-results" class="results-section hidden">
+                        <div class="results-header">
+                            <h3>Analysis Results</h3>
+                            <div class="result-actions">
+                                <button class="btn-icon-text" onclick="downloadCurrentPDF()">
+                                    📄 Download PDF
+                                </button>
+                                <button class="btn-icon-text" onclick="saveCurrentResult()">
+                                    💾 Save
+                                </button>
+                            </div>
+                        </div>
+                        <div class="results-grid">
+                            <div class="result-card">
+                                <h4>Sequence Length</h4>
+                                <p id="seq-length">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h4>GC Content</h4>
+                                <p id="gc-content">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h4>AT Content</h4>
+                                <p id="at-content">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h4>Molecular Weight</h4>
+                                <p id="mol-weight">-</p>
+                            </div>
+                            <div class="result-card full-width">
+                                <h4>Base Composition</h4>
+                                <div id="base-comp"></div>
+                            </div>
+                            <div class="result-card full-width">
+                                <h4>Reverse Complement</h4>
+                                <code id="rev-comp">-</code>
+                            </div>
+                            <div class="result-card full-width">
+                                <h4>RNA Transcription (T→U)</h4>
+                                <code id="rna-seq">-</code>
+                            </div>
+                            <div class="result-card full-width">
+                                <h4>Protein Translation</h4>
+                                <code id="protein-seq">-</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sequence Alignment Page -->
+            <section id="sequence-alignment" class="page">
+                <div class="page-header">
+                    <h2>Sequence Alignment</h2>
+                    <p>Compare two DNA sequences to find similarity and generate alignment reports</p>
+                </div>
+                <div class="tool-container">
+                    <div class="input-section">
+                        <div class="input-group">
+                            <label for="seq1">Sequence 1:</label>
+                            <textarea id="seq1" placeholder="ATCGATCG..." rows="3"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label for="seq2">Sequence 2:</label>
+                            <textarea id="seq2" placeholder="GCTAGCTA..." rows="3"></textarea>
+                        </div>
+                        <div class="action-buttons">
+                            <button id="align-btn" class="btn-primary">
+                                <span class="btn-icon">⚖️</span>
+                                Align Sequences
+                            </button>
+                            <button id="align-pdf-btn" class="btn-secondary" disabled>
+                                <span class="btn-icon">📄</span>
+                                Download PDF
+                            </button>
+                            <button id="align-save-btn" class="btn-secondary" disabled>
+                                <span class="btn-icon">💾</span>
+                                Save Result
+                            </button>
+                        </div>
+                    </div>
+                    <div id="align-results" class="results-section hidden">
+                        <div class="results-header">
+                            <h3>Alignment Results</h3>
+                            <div class="result-actions">
+                                <button class="btn-icon-text" onclick="downloadAlignmentPDF()">
+                                    📄 Download PDF
+                                </button>
+                                <button class="btn-icon-text" onclick="saveAlignmentResult()">
+                                    💾 Save
+                                </button>
+                            </div>
+                        </div>
+                        <div class="alignment-visual">
+                            <div class="alignment-row">
+                                <span class="label">Seq 1:</span>
+                                <code id="align-seq1">-</code>
+                            </div>
+                            <div class="alignment-row">
+                                <span class="label">Seq 2:</span>
+                                <code id="align-seq2">-</code>
+                            </div>
+                        </div>
+                        <div class="results-grid">
+                            <div class="result-card">
+                                <h4>Identity</h4>
+                                <p id="identity">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h4>Matches</h4>
+                                <p id="matches">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h4>Mismatches</h4>
+                                <p id="mismatches">-</p>
+                            </div>
+                            <div class="result-card">
+                                <h4>Alignment Length</h4>
+                                <p id="align-length">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BLAST Search Page -->
+            <section id="blast-search" class="page">
+                <div class="page-header">
+                    <h2>Mini BLAST Search</h2>
+                    <p>Search your sequence against a database of known genes</p>
+                </div>
+                <div class="tool-container">
+                    <div class="input-section">
+                        <label for="blast-query">Enter Query Sequence (min 10 bases):</label>
+                        <textarea id="blast-query" placeholder="ATCGATCGATCGATCGATCG..." rows="4"></textarea>
+                        <button id="blast-btn" class="btn-primary">
+                            <span class="btn-icon">🔍</span>
+                            Search Database
+                        </button>
+                    </div>
+                    <div id="blast-results" class="results-section hidden">
+                        <h3>BLAST Results</h3>
+                        <p class="results-info">Database: <span id="db-name">-</span> | Query Length: <span id="query-len">-</span> | Total Hits: <span id="total-hits">-</span></p>
+                        <div id="blast-hits"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Genome Viewer Page -->
+            <section id="genome-viewer" class="page">
+                <div class="page-header">
+                    <h2>Genome Viewer</h2>
+                    <p>Visualize chromosomes and gene locations</p>
+                </div>
+                <div class="tool-container">
+                    <div class="chromosome-container" id="chromosome-view">
+                        <!-- Chromosomes will be rendered here -->
+                    </div>
+                    <div class="gene-list">
+                        <h3>Gene Annotations</h3>
+                        <div id="gene-list-content">
+                            <!-- Genes will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Page -->
+            <section id="history" class="page">
+                <div class="page-header">
+                    <h2>Analysis History</h2>
+                    <p>View and manage your saved analysis results</p>
+                    <button id="clear-history-btn" class="btn-danger">
+                        <span class="btn-icon">🗑️</span>
+                        Clear All History
+                    </button>
+                </div>
+                <div class="history-container">
+                    <div id="history-list" class="history-list">
+                        <!-- History entries will be loaded here -->
+                        <div class="loading">Loading history...</div>
+                    </div>
+                    <div id="history-empty" class="history-empty hidden">
+                        <div class="empty-icon">📜</div>
+                        <h3>No History Yet</h3>
+                        <p>Your saved analysis results will appear here</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- History Detail Modal -->
+    <div id="history-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Analysis Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal()">Close</button>
+                <button class="btn-primary" id="modal-download-btn">
+                    <span class="btn-icon">📄</span>
+                    Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="error-toast" class="toast hidden"></div>
+    <div id="success-toast" class="toast success hidden"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Generating PDF...</p>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
