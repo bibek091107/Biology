@@ -24,8 +24,8 @@ app = Flask(__name__)
 # CONFIGURATION
 # ============================================================================
 
-# File to store analysis history
-HISTORY_FILE = 'analysis_history.json'
+# File to store analysis history (Use /tmp for serverless environments)
+HISTORY_FILE = '/tmp/analysis_history.json' if os.environ.get('VERCEL') else 'analysis_history.json'
 
 # ============================================================================
 # REAL GENE DATABASE
