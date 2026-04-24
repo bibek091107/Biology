@@ -1,6 +1,6 @@
 """
-Bioinformatics Toolkit - Flask Backend (Advanced Version)
-Student-friendly version with PDF export, history, and real gene data
+DNA Toolkit - Flask Backend
+DNA Analysis and Sequence Alignment Tool
 """
 
 from flask import Flask, render_template, jsonify, request, send_file
@@ -28,7 +28,7 @@ app = Flask(__name__)
 HISTORY_FILE = '/tmp/analysis_history.json' if os.environ.get('VERCEL') else 'analysis_history.json'
 
 # ============================================================================
-# REAL GENE DATABASE
+# HELPER FUNCTIONS
 # ============================================================================
 # Contains real biological gene sequences (simplified/shorter versions for demo)
 # These are actual gene regions used in bioinformatics education
@@ -155,40 +155,6 @@ def simple_align(seq1, seq2):
         "matches": matches,
         "mismatches": length - matches
     }
-
-def blast_search(query, e_value_threshold=10):
-    """Simple BLAST-like search against database"""
-    query = query.upper()
-    results = []
-    
-    for record in BLAST_DATABASE:
-        db_seq = record["sequence"].upper()
-        max_hits = 0
-        window_size = min(len(query), len(db_seq), 20)
-        
-        for i in range(len(db_seq) - window_size + 1):
-            window = db_seq[i:i + window_size]
-            matches = sum(1 for a, b in zip(query, window) if a == b)
-            hits = matches / window_size * 100
-            max_hits = max(max_hits, hits)
-        
-        e_value = max(0.001, 100 - max_hits) / 100
-        
-        if e_value <= e_value_threshold:
-            results.append({
-                "accession": record["id"],
-                "organism": record["organism"],
-                "gene": record["gene"],
-                "max_identity": round(max_hits, 2),
-                "e_value": round(e_value, 4),
-                "query_start": 1,
-                "query_end": len(query),
-                "subject_start": 1,
-                "subject_end": len(db_seq)
-            })
-    
-    results.sort(key=lambda x: (x["e_value"], -x["max_identity"]))
-    return results[:10]
 
 # ============================================================================
 # HISTORY MANAGEMENT
@@ -451,57 +417,6 @@ def align_sequences():
     result["protein2"] = translate_to_protein(seq2)
     
     return jsonify(result)
-
-@app.route('/api/blast/search', methods=['POST'])
-def search_blast():
-    """Search against BLAST database"""
-    data = request.get_json()
-    query = data.get('query', '').strip()
-    
-    if not query:
-        return jsonify({"error": "Query sequence required"}), 400
-    
-    query = re.sub(r'[^ATCGN]', '', query.upper())
-    
-    if len(query) < 10:
-        return jsonify({"error": "Query too short (minimum 10 bases)"}), 400
-    
-    results = blast_search(query)
-    
-    return jsonify({
-        "query": query,
-        "query_length": len(query),
-        "database": "Mini BioDB v1.0",
-        "database_size": len(BLAST_DATABASE),
-        "results": results,
-        "total_hits": len(results)
-    })
-
-@app.route('/api/genome/view', methods=['GET'])
-def get_genome_data():
-    """Get genome data for viewer"""
-    return jsonify({
-        "chromosomes": [
-            {"id": "chr1", "name": "Chromosome 1", "length": 500, "genes": 100},
-            {"id": "chr2", "name": "Chromosome 2", "length": 450, "genes": 80},
-            {"id": "chr3", "name": "Chromosome 3", "length": 400, "genes": 70},
-            {"id": "chr4", "name": "Chromosome 4", "length": 380, "genes": 60},
-            {"id": "chr5", "name": "Chromosome 5", "length": 350, "genes": 55},
-        ],
-        "features": [
-            {"chromosome": "chr1", "start": 100, "end": 200, "type": "gene", "name": "BRCA1"},
-            {"chromosome": "chr1", "start": 250, "end": 300, "type": "exon", "name": "Exon 1"},
-            {"chromosome": "chr2", "start": 150, "end": 250, "type": "gene", "name": "TP53"},
-            {"chromosome": "chr3", "start": 80, "end": 180, "type": "gene", "name": "EGFR"},
-        ]
-    })
-
-@app.route('/api/genes', methods=['GET'])
-def get_genes():
-    """Get list of real gene sequences"""
-    return jsonify({
-        "genes": REAL_GENES
-    })
 
 # ============================================================================
 # HISTORY API ROUTES

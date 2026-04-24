@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bioinformatics Toolkit - Advanced</title>
+    <title>DNA Toolkit - Analyze DNA Sequences</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -12,40 +12,32 @@
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h1>🧬 BioKit</h1>
-                <p>Advanced Version</p>
+                <h1>🧬 DNA Toolkit</h1>
+                <p>Analyze DNA Sequences</p>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item active" data-page="dashboard">
+                <li class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
                     <span class="icon">🏠</span>
                     <span>Dashboard</span>
                 </li>
-                <li class="nav-item" data-page="dna-analyzer">
+                <li class="nav-item" data-page="dna-analyzer" onclick="showPage('dna-analyzer')">
                     <span class="icon">🧪</span>
                     <span>DNA Analyzer</span>
                 </li>
-                <li class="nav-item" data-page="sequence-alignment">
+                <li class="nav-item" data-page="sequence-alignment" onclick="showPage('sequence-alignment')">
                     <span class="icon">📊</span>
                     <span>Sequence Alignment</span>
                 </li>
-                <li class="nav-item" data-page="blast-search">
-                    <span class="icon">🔍</span>
-                    <span>Mini BLAST</span>
-                </li>
-                <li class="nav-item" data-page="genome-viewer">
-                    <span class="icon">🗺️</span>
-                    <span>Genome Viewer</span>
-                </li>
                 <li class="nav-divider"></li>
-                <li class="nav-item" data-page="history" id="nav-history">
+                <li class="nav-item" data-page="history" id="nav-history" onclick="showPage('history')">
                     <span class="icon">📜</span>
                     <span>View History</span>
                     <span class="badge" id="history-badge" style="display:none;">0</span>
                 </li>
             </ul>
             <div class="sidebar-footer">
-                <p>Student Version</p>
-                <p>v2.0</p>
+                <p>DNA Toolkit</p>
+                <p>v1.0</p>
             </div>
         </nav>
 
@@ -55,8 +47,8 @@
             <!-- Dashboard Page -->
             <section id="dashboard" class="page active">
                 <div class="page-header">
-                    <h2>Welcome to Bioinformatics Toolkit</h2>
-                    <p>A professional tool for DNA analysis, sequence alignment, and genomic research</p>
+                    <h2>Welcome to DNA Toolkit</h2>
+                    <p>A professional tool for DNA analysis and sequence alignment</p>
                 </div>
                 
                 <!-- Feature Cards -->
@@ -79,39 +71,7 @@
                             <span class="tag">Matching</span>
                         </div>
                     </div>
-                    <div class="feature-card" data-goto="blast-search">
-                        <div class="card-icon">🔍</div>
-                        <h3>Mini BLAST</h3>
-                        <p>Search against a database of known gene sequences</p>
-                        <div class="card-tags">
-                            <span class="tag">Database</span>
-                            <span class="tag">E-value</span>
-                        </div>
-                    </div>
-                    <div class="feature-card" data-goto="genome-viewer">
-                        <div class="card-icon">🗺️</div>
-                        <h3>Genome Viewer</h3>
-                        <p>Visualize chromosomes and gene locations</p>
-                        <div class="card-tags">
-                            <span class="tag">Visualization</span>
-                            <span class="tag">Genes</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Real Gene Examples Section -->
-                <div class="section-container">
-                    <h3 class="section-title">
-                        <span class="icon">🧬</span>
-                        Example Gene Sequences
-                        <span class="subtitle">Real biological genes for practice</span>
-                    </h3>
-                    <div class="gene-cards" id="gene-cards">
-                        <!-- Gene cards will be loaded dynamically -->
-                        <div class="loading">Loading gene database...</div>
-                    </div>
-                </div>
-            </section>
+                </section>
 
             <!-- DNA Analyzer Page -->
             <section id="dna-analyzer" class="page">
@@ -258,48 +218,6 @@
                                 <h4>Alignment Length</h4>
                                 <p id="align-length">-</p>
                             </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- BLAST Search Page -->
-            <section id="blast-search" class="page">
-                <div class="page-header">
-                    <h2>Mini BLAST Search</h2>
-                    <p>Search your sequence against a database of known genes</p>
-                </div>
-                <div class="tool-container">
-                    <div class="input-section">
-                        <label for="blast-query">Enter Query Sequence (min 10 bases):</label>
-                        <textarea id="blast-query" placeholder="ATCGATCGATCGATCGATCG..." rows="4"></textarea>
-                        <button id="blast-btn" class="btn-primary">
-                            <span class="btn-icon">🔍</span>
-                            Search Database
-                        </button>
-                    </div>
-                    <div id="blast-results" class="results-section hidden">
-                        <h3>BLAST Results</h3>
-                        <p class="results-info">Database: <span id="db-name">-</span> | Query Length: <span id="query-len">-</span> | Total Hits: <span id="total-hits">-</span></p>
-                        <div id="blast-hits"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Genome Viewer Page -->
-            <section id="genome-viewer" class="page">
-                <div class="page-header">
-                    <h2>Genome Viewer</h2>
-                    <p>Visualize chromosomes and gene locations</p>
-                </div>
-                <div class="tool-container">
-                    <div class="chromosome-container" id="chromosome-view">
-                        <!-- Chromosomes will be rendered here -->
-                    </div>
-                    <div class="gene-list">
-                        <h3>Gene Annotations</h3>
-                        <div id="gene-list-content">
-                            <!-- Genes will be listed here -->
                         </div>
                     </div>
                 </div>

@@ -13,18 +13,13 @@ let currentAlignmentResult = null;
 
 // Wait for DOM to be fully loaded before running code
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Bioinformatics Toolkit initialized - Advanced Version');
+    console.log('DNA Toolkit initialized');
     
-    // Initialize all event listeners
     initNavigation();
     initDNAAnalyzer();
     initSequenceAlignment();
-    initBLASTSearch();
-    initGenomeViewer();
     initHistory();
-    initGeneCards();
     
-    // Update history badge on page load
     updateHistoryBadge();
 });
 
@@ -32,6 +27,28 @@ document.addEventListener('DOMContentLoaded', function() {
  * Navigation System
  * Handles switching between different pages/features
  */
+function showPage(pageName) {
+    const navItems = document.querySelectorAll('.nav-item');
+    const pages = document.querySelectorAll('.page');
+    
+    navItems.forEach(nav => nav.classList.remove('active'));
+    pages.forEach(page => page.classList.remove('active'));
+    
+    const targetPage = document.getElementById(pageName);
+    const navItem = document.querySelector(`.nav-item[data-page="${pageName}"]`);
+    
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+    if (navItem) {
+        navItem.classList.add('active');
+    }
+    
+    if (pageName === 'history') {
+        loadHistory();
+    }
+}
+
 function initNavigation() {
     const navItems = document.querySelectorAll('.nav-item');
     const pages = document.querySelectorAll('.page');
@@ -40,20 +57,7 @@ function initNavigation() {
     navItems.forEach(item => {
         item.addEventListener('click', function() {
             const pageName = this.getAttribute('data-page');
-            
-            navItems.forEach(nav => nav.classList.remove('active'));
-            this.classList.add('active');
-            
-            pages.forEach(page => page.classList.remove('active'));
-            const targetPage = document.getElementById(pageName);
-            if (targetPage) {
-                targetPage.classList.add('active');
-            }
-            
-            // Refresh history when navigating to history page
-            if (pageName === 'history') {
-                loadHistory();
-            }
+            showPage(pageName);
         });
     });
 
@@ -66,83 +70,6 @@ function initNavigation() {
             }
         });
     });
-}
-
-// ============================================================================
-// GENE CARDS (Real Gene Database)
-// ============================================================================
-
-/**
- * Initialize gene cards by fetching real gene data from backend
- */
-function initGeneCards() {
-    fetch('/api/genes')
-        .then(response => response.json())
-        .then(data => {
-            displayGeneCards(data.genes);
-        })
-        .catch(error => {
-            console.error('Error loading genes:', error);
-            document.getElementById('gene-cards').innerHTML = 
-                '<p class="error">Failed to load gene database</p>';
-        });
-}
-
-/**
- * Display gene cards in the dashboard
- */
-function displayGeneCards(genes) {
-    const container = document.getElementById('gene-cards');
-    container.innerHTML = '';
-    
-    for (const [geneId, gene] of Object.entries(genes)) {
-        const card = document.createElement('div');
-        card.className = 'gene-card';
-        card.innerHTML = `
-            <div class="gene-card-header">
-                <div>
-                    <h4>${gene.name}</h4>
-                    <span class="gene-id">${geneId}</span>
-                </div>
-                <span class="gene-location">${gene.location}</span>
-            </div>
-            <p>${gene.description}</p>
-            <div class="gene-sequence">${gene.sequence}</div>
-            <div class="gene-card-footer">
-                <span class="gene-function">${gene.function}</span>
-                <button class="btn-use-sequence" onclick="useGeneSequence('${geneId}')">
-                    Use Sequence
-                </button>
-            </div>
-        `;
-        container.appendChild(card);
-    }
-}
-
-/**
- * Use a gene sequence - navigate to DNA analyzer and fill the input
- */
-function useGeneSequence(geneId) {
-    fetch('/api/genes')
-        .then(response => response.json())
-        .then(data => {
-            const gene = data.genes[geneId];
-            if (gene) {
-                // Navigate to DNA analyzer
-                const navItem = document.querySelector('.nav-item[data-page="dna-analyzer"]');
-                if (navItem) {
-                    navItem.click();
-                }
-                // Fill the sequence input
-                setTimeout(() => {
-                    document.getElementById('dna-sequence').value = gene.sequence;
-                    showToast(`Loaded ${gene.name} sequence`, 'success');
-                }, 100);
-            }
-        })
-        .catch(error => {
-            showToast('Failed to load gene sequence', 'error');
-        });
 }
 
 // ============================================================================
@@ -303,170 +230,6 @@ function displayAlignmentResults(data) {
     document.getElementById('align-length').textContent = data.alignment_length + ' bp';
     
     resultsSection.classList.remove('hidden');
-}
-
-// ============================================================================
-// BLAST SEARCH
-// ============================================================================
-
-function initBLASTSearch() {
-    const blastBtn = document.getElementById('blast-btn');
-    blastBtn.addEventListener('click', searchBLAST);
-}
-
-async function searchBLAST() {
-    const query = document.getElementById('blast-query').value.trim();
-    
-    if (!query) {
-        showToast('Please enter a query sequence', 'error');
-        return;
-    }
-    
-    const blastBtn = document.getElementById('blast-btn');
-    blastBtn.textContent = 'Searching...';
-    blastBtn.disabled = true;
-    
-    try {
-        const response = await fetch('/api/blast/search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: query })
-        });
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            showToast(data.error || 'Search failed', 'error');
-            return;
-        }
-        
-        displayBLASTResults(data);
-        showToast(`Found ${data.total_hits} results!`, 'success');
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showToast('Failed to connect to server', 'error');
-    } finally {
-        blastBtn.textContent = 'Search Database';
-        blastBtn.disabled = false;
-    }
-}
-
-function displayBLASTResults(data) {
-    const resultsSection = document.getElementById('blast-results');
-    const hitsContainer = document.getElementById('blast-hits');
-    
-    document.getElementById('db-name').textContent = data.database;
-    document.getElementById('query-len').textContent = data.query_length + ' bp';
-    document.getElementById('total-hits').textContent = data.total_hits;
-    
-    hitsContainer.innerHTML = '';
-    
-    if (data.results.length === 0) {
-        hitsContainer.innerHTML = '<p style="color: var(--text-muted);">No significant matches found.</p>';
-    } else {
-        data.results.forEach(hit => {
-            const hitCard = document.createElement('div');
-            hitCard.className = 'blast-hit';
-            hitCard.innerHTML = `
-                <div class="blast-hit-header">
-                    <h4>${hit.gene}</h4>
-                    <span class="accession">${hit.accession} | ${hit.organism}</span>
-                </div>
-                <div class="blast-hit-stats">
-                    <span>Identity: <strong>${hit.max_identity}%</strong></span>
-                    <span>E-value: <strong>${hit.e_value}</strong></span>
-                    <span>Query: <strong>${hit.query_start}-${hit.query_end}</strong></span>
-                    <span>Subject: <strong>${hit.subject_start}-${hit.subject_end}</strong></span>
-                </div>
-            `;
-            hitsContainer.appendChild(hitCard);
-        });
-    }
-    
-    resultsSection.classList.remove('hidden');
-}
-
-// ============================================================================
-// GENOME VIEWER
-// ============================================================================
-
-function initGenomeViewer() {
-    const genomePage = document.getElementById('genome-viewer');
-    
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.target.classList.contains('active')) {
-                loadGenomeData();
-            }
-        });
-    });
-    
-    observer.observe(genomePage, { attributes: true, attributeFilter: ['class'] });
-}
-
-async function loadGenomeData() {
-    try {
-        const response = await fetch('/api/genome/view');
-        const data = await response.json();
-        
-        if (!response.ok) {
-            showToast('Failed to load genome data', 'error');
-            return;
-        }
-        
-        displayChromosomes(data.chromosomes, data.features);
-        displayGeneList(data.features);
-        
-    } catch (error) {
-        console.error('Error:', error);
-        showToast('Failed to connect to server', 'error');
-    }
-}
-
-function displayChromosomes(chromosomes, features) {
-    const container = document.getElementById('chromosome-view');
-    container.innerHTML = '';
-    
-    chromosomes.forEach(chr => {
-        const chrCard = document.createElement('div');
-        chrCard.className = 'chromosome';
-        
-        const chrFeatures = features.filter(f => f.chromosome === chr.id);
-        
-        chrCard.innerHTML = `
-            <div class="chromosome-info">
-                <h4>${chr.name}</h4>
-                <p>Length: ${chr.length} | Genes: ${chr.genes}</p>
-            </div>
-            <div class="chromosome-bar">
-                ${chrFeatures.map(f => {
-                    const startPercent = (f.start / chr.length) * 100;
-                    const widthPercent = ((f.end - f.start) / chr.length) * 100;
-                    return `<div class="gene-marker" 
-                                style="left: ${startPercent}%; width: ${Math.max(widthPercent, 2)}%;" 
-                                title="${f.name}"></div>`;
-                }).join('')}
-            </div>
-        `;
-        
-        container.appendChild(chrCard);
-    });
-}
-
-function displayGeneList(features) {
-    const container = document.getElementById('gene-list-content');
-    container.innerHTML = '';
-    
-    features.forEach(feature => {
-        const geneItem = document.createElement('div');
-        geneItem.className = 'gene-item';
-        geneItem.innerHTML = `
-            <span class="gene-name">${feature.name}</span>
-            <span class="gene-loc">${feature.chromosome}: ${feature.start}-${feature.end}</span>
-        `;
-        container.appendChild(geneItem);
-    });
 }
 
 // ============================================================================
